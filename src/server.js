@@ -1,34 +1,35 @@
 import express from "express";
 import fileupload from "express-fileupload";
-import path from "path";
 import cors from "cors";
-import sequelize from "./config/database.js";
-import { PORT } from "../env.js";
+import path from "path";
+
+import { router } from "./routes/indexRouter.js";
+
+import { UPLOADS_DIR } from "../env.js";
 
 export const server = express();
 
-// Middlewares
-server.use(cors());
+/* MIDDLEWARES */
+
+//JSON
 server.use(express.json());
 
+//UPLOAD FILES
 server.use(fileupload());
 
+//RECURSOS ESTÁTICOS
 const uploadsDir = path.join(process.cwd(), `src/${UPLOADS_DIR}`);
 server.use("/uploads", express.static(uploadsDir));
 
-// Routes
-server.use(router);
+//CORS
+server.use(cors());
 
-// Ruta de prueba
-server.get("/", (req, res) => {
-    res.json({ mensaje: "¡Servidor Recetario Compartido listo!" });
-});
+/* ROUTER */
+server.use(router); // meto el indexRouter
 
-// 404 handler
-server.use((req, res) => {
-    res.status(404).json({ error: "Ruta no encontrada" });
-});
+/* ERRORS */
 
+//ERROR 404
 server.use((req, res, next) => {
     const resourcePath = req.path;
     const error = new Error(`No se encontró el recurso: ${resourcePath}`);
@@ -37,6 +38,7 @@ server.use((req, res, next) => {
     next(error);
 });
 
+//GESTIÓN DE ERRORES
 server.use((error, req, res, next) => {
     console.error(error);
     res.status(error.httpStatus || 500).send({
@@ -46,31 +48,3 @@ server.use((error, req, res, next) => {
         message: error.message,
     });
 });
-
-// Global error handler
-server.use((err, req, res, next) => {
-    console.error(err.stack);
-    res.status(err.status || 500).json({
-        error: err.message || "Error interno",
-    });
-});
-
-// Conexión y sincronización a DB
-(async () => {
-    try {
-        await sequelize.authenticate();
-        console.log("✅ Conexión MySQL establecida");
-        await sequelize.sync();
-        console.log("🔄 Modelos sincronizados");
-
-        // Arranca el servidor UNA VEZ sincronizada la BD
-        server.listen(PORT, () => {
-            console.log(`🚀 Servidor escuchando en el puerto ${PORT}`);
-        });
-    } catch (error) {
-        console.error(
-            "❌ Error al conectar o sincronizar la base de datos:",
-            error
-        );
-    }
-})();

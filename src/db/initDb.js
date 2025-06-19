@@ -10,7 +10,7 @@ import {
     ADMIN_PASSWORD,
     ADMIN_EMAIL,
 } from "../../env.js";
-import { createPathUtil, deletePathUtil } from "../utils/foldersUtils.js";
+import { createPathUtil, deletePathUtil } from "../utils/folderUtils.js";
 
 export const initDb = async () => {
     try {
@@ -56,7 +56,7 @@ export const initDb = async () => {
             CREATE TABLE recetas (
                 id CHAR(36) PRIMARY KEY NOT NULL,
                 nombre VARCHAR(50) NOT NULL,
-                categoria ENUM('postres', 'bebidas', 'entrantes', 'principales',) DEFAULT 'principales',
+                categoria ENUM('postres', 'bebidas', 'entrantes', 'principales') DEFAULT 'principales',
                 localidad VARCHAR(50) NOT NULL,                descripcion TEXT NOT NULL,
                 cocineroId CHAR(36) NOT NULL,
                 createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -84,10 +84,12 @@ export const initDb = async () => {
                 valoracion TINYINT UNSIGNED NOT NULL,
                 comentario VARCHAR(256) DEFAULT NULL,
                 viewerId CHAR(36) NOT NULL,
+                recetaId CHAR(36) NOT NULL,
                 createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 updatedAt TIMESTAMP DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
                 FOREIGN KEY (viewerId) REFERENCES usuarios(id) ON DELETE CASCADE,
-                UNIQUE(viewerId,),
+                FOREIGN KEY (recetaId) REFERENCES recetas(id) ON DELETE CASCADE,
+                UNIQUE(viewerId, recetaId),
                 CHECK (valoracion>= 1 AND valoracion<=5)
             );
         `);
@@ -117,7 +119,7 @@ export const initDb = async () => {
         await createPathUtil(uploadsDir);
         const avatarsDir = path.join(uploadsDir, "avatars");
         await createPathUtil(avatarsDir);
-        const articulosDir = path.join(uploadsDir, "articulos");
+        const recetasDir = path.join(uploadsDir, "recetas");
         await createPathUtil(recetasDir);
         console.log("Directorios de subida creados");
 
