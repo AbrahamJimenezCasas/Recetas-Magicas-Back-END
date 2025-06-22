@@ -1,7 +1,7 @@
 import { registerUserSchema } from "../../schemas/users/registerUserSchema.js";
 import { registerUserService } from "../../services/users/registerUserService.js";
 
-import { validateSchemaUtil } from "../../utils/validateSchemaUtil.js";
+import { validateSchemaUtil } from "../../utils/validateSchemaUtils.js";
 
 export const registerUserController = async (req, res, next) => {
     try {
